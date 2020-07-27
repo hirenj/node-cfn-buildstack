@@ -1,4 +1,4 @@
-const git_command = 'git describe --long --tags HEAD';
+const git_command = 'git describe --long --tags --always --dirty';
 
 const exec = require('child_process').exec;
 
