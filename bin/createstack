@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+const { createStacks } = require('../js/create_stacks');
+
+createStacks('Stack');
