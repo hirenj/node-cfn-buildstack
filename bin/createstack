@@ -2,4 +2,20 @@
 
 const { createStacks } = require('../js/create_stacks');
 
-createStacks('Stack');
+const { program } = require('commander');
+
+program.storeOptionsAsProperties(false);
+
+program.version(require('../package.json').version);
+
+program
+  .requiredOption('-n, --name <name>', 'Template name')
+  .option('-o, --outputdir <dir>', 'Output directory');
+
+program.parse(process.argv);
+
+let opts = program.opts();
+
+createStacks(opts.name,opts.outputdir).then ( () => {
+  console.log(`Created templates for ${opts.name}`);
+});

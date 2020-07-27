@@ -4,7 +4,7 @@ function make_cors(resources,method) {
   let resource  = resources[method];
   resource.Properties.Integration.IntegrationResponses.forEach(int_resp => {
     int_resp.ResponseParameters = int_resp.ResponseParameters || {};
-    int_resp.ResponseParameters['method.response.header.Access-Control-Allow-Origin'] = ''*'';
+    int_resp.ResponseParameters['method.response.header.Access-Control-Allow-Origin'] = '\'*\'';
   });
   resource.Properties.MethodResponses.forEach( method_resp => {
     method_resp.ResponseParameters = method_resp.ResponseParameters || {};
@@ -35,7 +35,7 @@ function enable_cors(template) {
     }
     delete options_method.Properties.ApiKeyRequired;
     options_method.Properties.Integration = {'Type' : 'MOCK'};
-    options_method.Properties.Integration.RequestTemplates = { 'application/json' : '{\'statusCode\': 200}' };
+    options_method.Properties.Integration.RequestTemplates = { 'application/json' : '{"statusCode": 200}' };
     options_method.Properties.Integration.IntegrationResponses = [
     {
       'ResponseParameters': {

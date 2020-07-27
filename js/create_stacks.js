@@ -158,7 +158,7 @@ function buildStack() {
 }
 
 function createStacks(stackName='Stack',outputpath='') {
-  get_git_status().catch( err => {
+  return get_git_status().catch( err => {
     if (err.message.indexOf('fatal: No names found, cannot describe anything') >= 0 ) {
       return '';      
     } else {
@@ -187,10 +187,10 @@ function createStacks(stackName='Stack',outputpath='') {
     for (let [entry, substack] of Object.entries(stack.Resources).filter( ([entry,]) => { return ['optionsStack','usersStack'].indexOf(entry) >= 0; } ) ) {
       switch (entry) {
         case 'optionsStack':
-          substack.Properties.TemplateURL.data = substack.Properties.TemplateURL.data.replace(/[^\/]+.template/, options_filename );
+          substack.Properties.TemplateURL.data = substack.Properties.TemplateURL.data.replace(/\/[^\/]+.template$/, `/${options_filename}` );
           break;
         case 'usersStack':
-          substack.Properties.TemplateURL.data = substack.Properties.TemplateURL.data.replace(/[^\/]+.template/, users_filename );
+          substack.Properties.TemplateURL.data = substack.Properties.TemplateURL.data.replace(/\/[^\/]+.template$/, `/${users_filename}` );
           break;
       }
     }
