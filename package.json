@@ -4,17 +4,17 @@
   "description": "Assembles cloudformation templates",
   "main": "js/create_stacks.js",
   "bin": {
-    "createstack" : "bin/createstack"
+    "createstack": "bin/createstack"
   },
   "scripts": {
-    "jshint-pre-commit" : "node ./node_modules/jshint/bin/jshint js/* bin/*",
+    "jshint-pre-commit": "node ./node_modules/jshint/bin/jshint js/* bin/*",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "hirenj@gmail.com",
   "license": "ISC",
-  "devDependencies" : {
-    "jshint": "^2.10.2",
-    "precommit-hook": "^3.0.0"
+  "devDependencies": {
+    "husky": "^4.2.5",
+    "jshint": "^2.10.2"
   },
   "dependencies": {
     "cloudformation-js-yaml-schema": "^0.4.2",
@@ -22,7 +22,9 @@
     "js-yaml": "^3.14.0",
     "yaml-include": "^1.2.1"
   },
-  "pre-commit": [
-    "jshint-pre-commit"
-  ]
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run jshint-pre-commit"
+    }
+  }
 }
