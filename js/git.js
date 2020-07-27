@@ -11,6 +11,6 @@ function get_git_status() {
       resolve(String(stdout).trim());
     });
   });
-};
+}
 
 module.exports = { get_git_status };

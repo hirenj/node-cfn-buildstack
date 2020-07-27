@@ -13,10 +13,10 @@ const combine_resources = (curr,prev) => {
       }
       prev[key] = wanted;
       if (! wanted.Properties.NotificationConfiguration && alternative.Properties.NotificationConfiguration ) {
-        wanted.Properties.NotificationConfiguration = {}
+        wanted.Properties.NotificationConfiguration = {};
       }
       wanted.Properties.NotificationConfiguration.LambdaConfigurations = (wanted.Properties.NotificationConfiguration.LambdaConfigurations || []).concat( alternative.Properties.NotificationConfiguration.LambdaConfigurations );
-      wanted.DependsOn = (wanted.DependsOn || []).concat(alternative.DependsOn)
+      wanted.DependsOn = (wanted.DependsOn || []).concat(alternative.DependsOn);
       curr[key] = prev[key];
     }
     if (prev[key] && prev[key].Type == 'AWS::SNS::Topic') {

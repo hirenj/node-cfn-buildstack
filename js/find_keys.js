@@ -23,6 +23,6 @@ function find_keys(keyname, object) {
     return results.filter( val => val );
   }
   return;
-};
+}
 
 module.exports = { find_keys };

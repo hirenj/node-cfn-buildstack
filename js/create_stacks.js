@@ -1,7 +1,5 @@
 const CLOUDFORMATION_SCHEMA = require('cloudformation-js-yaml-schema').CLOUDFORMATION_SCHEMA;
 
-const assert = require('assert');
-
 const yaml_include = require('yaml-include');
 
 const yaml = require('js-yaml');
@@ -33,14 +31,14 @@ yaml_include.YAML_INCLUDE_SCHEMA = CFN_SCHEMA;
 
 const unique = (o,i,a) => a.indexOf(o) === i;
 
-const find_non_aws_refs = function(resources) {
+function find_non_aws_refs(resources) {
   let vals = find_keys('Ref',resources);
   return vals.filter( val => {
     return ! val.match(/^AWS::/);
   }).filter(unique);
-};
+}
 
-const fill_parameters = function(template) {
+function fill_parameters(template) {
   let current_params = Object.keys(template.Parameters || {});
   let defined_resources = Object.keys(template.Resources || {}).concat( Object.keys(template.Conditions || {}) );
   let references = find_non_aws_refs(template.Resources);
@@ -52,25 +50,25 @@ const fill_parameters = function(template) {
   references.forEach( ref => {
     if (defined_resources.indexOf(ref) < 0 && current_params.indexOf(ref) < 0) {
       template.Parameters[ref] = {
-        "Type" : "String",
-        "Description": "Parameter " +ref
-      }
+        'Type' : 'String',
+        'Description': 'Parameter ' +ref
+      };
     }
   });
-};
+}
 
-const fix_deployment_dependency = template => {
-  if ( ! template.Resources['productionDeployment']) {
+function fix_deployment_dependency(template) {
+  if ( ! template.Resources.productionDeployment) {
     return;
   }
   let methods = Object.keys(template.Resources).filter( resource =>  template.Resources[resource].Type == 'AWS::ApiGateway::Method' );
-  template.Resources['productionDeployment'].DependsOn = methods;
+  template.Resources.productionDeployment.DependsOn = methods;
 }
 
 function readSubstacks(pattern='resources/*.yaml') {
   let stack = yaml.safeLoad(fs.readFileSync(STACK_DEFINITION_PATH));
 
-  let sub_templates = glob.sync('resources/*.yaml');
+  let sub_templates = glob.sync(pattern);
 
   for (let template of sub_templates) {
     let template_string = fs.readFileSync(template);
@@ -89,7 +87,7 @@ function readSubstacks(pattern='resources/*.yaml') {
 }
 
 function extractOptionsStack(parent_stack) {
-  if ( ! parent_stack.Resources['optionsStack']) {
+  if ( ! parent_stack.Resources.optionsStack) {
     return;
   }
 
@@ -105,9 +103,9 @@ function extractOptionsStack(parent_stack) {
 
   fill_parameters(options_stack);
 
-  if (parent_stack.Resources['optionsStack']) {
+  if (parent_stack.Resources.optionsStack) {
     for (let key of Object.keys(options_stack.Parameters)) {
-      parent_stack.Resources['optionsStack'].Properties.Parameters[key] = REF_TYPE.construct(key);
+      parent_stack.Resources.optionsStack.Properties.Parameters[key] = REF_TYPE.construct(key);
     }
   }
 
@@ -115,7 +113,7 @@ function extractOptionsStack(parent_stack) {
 }
 
 function constructIAMUsersStack(parent_stack,pattern='resources/iam_users/*.yaml') {
-  if (! parent_stack.Resources['usersStack']) {
+  if (! parent_stack.Resources.usersStack) {
     return;
   }
 
@@ -136,8 +134,8 @@ function constructIAMUsersStack(parent_stack,pattern='resources/iam_users/*.yaml
   fill_parameters(users_stack);
 
   for (let key of Object.keys(users_stack.Parameters)) {
-    if ( ! parent_stack.Resources['usersStack'].Properties.Parameters[key] ) {
-      parent_stack.Resources['usersStack'].Properties.Parameters[key] = REF_TYPE.construct(key);
+    if ( ! parent_stack.Resources.usersStack.Properties.Parameters[key] ) {
+      parent_stack.Resources.usersStack.Properties.Parameters[key] = REF_TYPE.construct(key);
     }
   }
 
@@ -156,7 +154,7 @@ function buildStack() {
 
   fix_deployment_dependency(stack);
 
-  return { stack, options_stack, users_stack }
+  return { stack, options_stack, users_stack };
 }
 
 function createStacks(stackName='Stack',outputpath='') {
@@ -186,12 +184,12 @@ function createStacks(stackName='Stack',outputpath='') {
 
     let users_filename = `${clean_filename.replace(stackName,`${stackName}_users`)}.template`;
     let options_filename = `${clean_filename.replace(stackName,`${stackName}_options`)}.template`;
-    for (let [entry, substack] of Object.entries(stack.Resources).filter( ([entry,res]) => { return ['optionsStack','usersStack'].indexOf(entry) >= 0 } ) ) {
+    for (let [entry, substack] of Object.entries(stack.Resources).filter( ([entry,]) => { return ['optionsStack','usersStack'].indexOf(entry) >= 0; } ) ) {
       switch (entry) {
-        case "optionsStack":
+        case 'optionsStack':
           substack.Properties.TemplateURL.data = substack.Properties.TemplateURL.data.replace(/[^\/]+.template/, options_filename );
           break;
-        case "usersStack":
+        case 'usersStack':
           substack.Properties.TemplateURL.data = substack.Properties.TemplateURL.data.replace(/[^\/]+.template/, users_filename );
           break;
       }
