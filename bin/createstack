@@ -4,6 +4,8 @@ const { createStacks } = require('../js/create_stacks');
 
 const { program } = require('commander');
 
+const path  = require('path');
+
 program.storeOptionsAsProperties(false);
 
 program.version(require('../package.json').version);
@@ -16,6 +18,7 @@ program.parse(process.argv);
 
 let opts = program.opts();
 
-createStacks(opts.name,opts.outputdir).then ( () => {
-  console.log(`Created templates for ${opts.name}`);
+createStacks(opts.name,opts.outputdir).then ( (filename) => {
+  console.error(`Created templates for ${opts.name}`);
+  console.log(path.join(opts.outputdir,filename));
 });

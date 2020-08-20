@@ -197,7 +197,7 @@ function createStacks(stackName='Stack',outputpath='') {
 
     let generated_yaml_string = yaml.safeDump(stack, {schema: CLOUDFORMATION_SCHEMA });
 
-    fs.writeFileSync(path.join(outputpath,`${stackName}.template`),generated_yaml_string);
+    fs.writeFileSync(path.join(outputpath,`${clean_filename}.template`),generated_yaml_string);
 
     if (options_stack) {
       fs.writeFileSync(path.join(outputpath,options_filename), yaml.safeDump(options_stack, {schema: CLOUDFORMATION_SCHEMA }));
@@ -206,6 +206,8 @@ function createStacks(stackName='Stack',outputpath='') {
     if (users_stack) {
       fs.writeFileSync(path.join(outputpath,users_filename), yaml.safeDump(users_stack, {schema: CLOUDFORMATION_SCHEMA }));
     }
+
+    return `${clean_filename}.template`;
 
   });
 }
