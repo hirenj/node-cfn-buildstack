@@ -2,6 +2,8 @@
 
 const { createStacks } = require('../js/create_stacks');
 
+const { updateLambdas } = require('../js/update_lambdas'); 
+
 const { program } = require('commander');
 
 const path  = require('path');
@@ -12,7 +14,8 @@ program.version(require('../package.json').version);
 
 program
   .requiredOption('-n, --name <name>', 'Template name')
-  .option('-o, --outputdir <dir>', 'Output directory');
+  .option('-o, --outputdir <dir>', 'Output directory')
+  .option('-l, --lambdasdir <dir>','Zipped lambdas');
 
 program.parse(process.argv);
 
@@ -20,5 +23,9 @@ let opts = program.opts();
 
 createStacks(opts.name,opts.outputdir).then ( (filename) => {
   console.error(`Created templates for ${opts.name}`);
-  console.log(path.join(opts.outputdir,filename));
+  const filepath = path.join(opts.outputdir,filename);
+  console.log(filepath);
+  if (opts.lambdasdir) {
+    return updateLambdas(filepath,opts.lambdasdir);
+  }
 });

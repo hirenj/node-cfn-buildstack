@@ -1,8 +1,3 @@
-const CLOUDFORMATION_SCHEMA = require('cloudformation-js-yaml-schema').CLOUDFORMATION_SCHEMA;
-
-const yaml_include = require('yaml-include');
-
-const yaml = require('js-yaml');
 
 const glob = require('glob');
 
@@ -17,17 +12,9 @@ const { combine_stacks } = require('./combiners');
 
 const { get_git_status } = require('./git');
 
+const { write_cfn, load_cfn, REF_TYPE } = require('./cfn_yaml');
+
 const STACK_DEFINITION_PATH = path.join(__dirname, '../resources/' ,'stack_definition.yaml');
-
-const YAML_INCLUDE_SCHEMA = yaml_include.YAML_INCLUDE_SCHEMA;
-
-const CFN_SCHEMA = new yaml.Schema({
-  include: [ CLOUDFORMATION_SCHEMA, YAML_INCLUDE_SCHEMA ]
-});
-
-const REF_TYPE = CLOUDFORMATION_SCHEMA.compiledTypeMap.scalar['!Ref'];
-
-yaml_include.YAML_INCLUDE_SCHEMA = CFN_SCHEMA;
 
 const unique = (o,i,a) => a.indexOf(o) === i;
 
@@ -66,13 +53,13 @@ function fix_deployment_dependency(template) {
 }
 
 function readSubstacks(pattern='resources/*.yaml') {
-  let stack = yaml.safeLoad(fs.readFileSync(STACK_DEFINITION_PATH));
+  let stack = load_cfn(fs.readFileSync(STACK_DEFINITION_PATH));
 
   let sub_templates = glob.sync(pattern);
 
   for (let template of sub_templates) {
     let template_string = fs.readFileSync(template);
-    let sub_template = yaml.safeLoad(template_string, { schema: CFN_SCHEMA });
+    let sub_template = load_cfn(template_string);
     if (sub_template.AWSTemplateFormatVersion === '2010-09-09') {
       combine_stacks(stack,sub_template);
     } else if (sub_template.modules) {
@@ -91,7 +78,7 @@ function extractOptionsStack(parent_stack) {
     return;
   }
 
-  let options_stack = yaml.safeLoad(fs.readFileSync(STACK_DEFINITION_PATH));
+  let options_stack = load_cfn(fs.readFileSync(STACK_DEFINITION_PATH));
 
   for (let key of Object.keys(parent_stack.Resources)) {
     if (parent_stack.Resources[key].Type === 'AWS::ApiGateway::Method' && parent_stack.Resources[key].Properties.HttpMethod == 'OPTIONS') {
@@ -117,11 +104,11 @@ function constructIAMUsersStack(parent_stack,pattern='resources/iam_users/*.yaml
     return;
   }
 
-  let users_stack = yaml.safeLoad(fs.readFileSync(STACK_DEFINITION_PATH));
+  let users_stack = load_cfn(fs.readFileSync(STACK_DEFINITION_PATH));
 
   for (let template of glob.sync(pattern)) {
     let template_string = fs.readFileSync(template);
-    let sub_template = yaml.safeLoad(template_string, { schema: CFN_SCHEMA });
+    let sub_template = load_cfn(template_string);
     if (sub_template.AWSTemplateFormatVersion === '2010-09-09') {
       combine_stacks(users_stack,sub_template);
     } else if (sub_template.modules) {
@@ -195,16 +182,16 @@ function createStacks(stackName='Stack',outputpath='') {
       }
     }
 
-    let generated_yaml_string = yaml.safeDump(stack, {schema: CLOUDFORMATION_SCHEMA });
+    let generated_yaml_string = write_cfn(stack);
 
     fs.writeFileSync(path.join(outputpath,`${clean_filename}.template`),generated_yaml_string);
 
     if (options_stack) {
-      fs.writeFileSync(path.join(outputpath,options_filename), yaml.safeDump(options_stack, {schema: CLOUDFORMATION_SCHEMA }));
+      fs.writeFileSync(path.join(outputpath,options_filename), write_cfn(options_stack));
     }
 
     if (users_stack) {
-      fs.writeFileSync(path.join(outputpath,users_filename), yaml.safeDump(users_stack, {schema: CLOUDFORMATION_SCHEMA }));
+      fs.writeFileSync(path.join(outputpath,users_filename), write_cfn(users_stack));
     }
 
     return `${clean_filename}.template`;
