@@ -129,13 +129,13 @@ function constructIAMUsersStack(parent_stack,pattern='resources/iam_users/*.yaml
   return users_stack;
 }
 
-function buildStack() {
+function buildStack(inputpath='resources') {
 
-  let stack = readSubstacks();
+  let stack = readSubstacks(`${inputpath}/*.yaml`);
 
   let options_stack = extractOptionsStack(stack);
 
-  let users_stack = constructIAMUsersStack(stack);
+  let users_stack = constructIAMUsersStack(stack,`${inputpath}/iam_users/*.yaml`);
 
   fill_parameters(stack);
 
@@ -144,7 +144,7 @@ function buildStack() {
   return { stack, options_stack, users_stack };
 }
 
-function createStacks(stackName='Stack',outputpath='') {
+function createStacks(stackName='Stack',outputpath='',inputpath='resources') {
   return get_git_status().catch( err => {
     if (err.message.indexOf('fatal: No names found, cannot describe anything') >= 0 ) {
       return '';      
@@ -153,7 +153,7 @@ function createStacks(stackName='Stack',outputpath='') {
     }
   }).then( git_status => {
 
-    let {stack, options_stack, users_stack} = buildStack();
+    let {stack, options_stack, users_stack} = buildStack(inputpath);
 
     let status = git_status ? ' '+git_status.replace(/-0-[^-]+$/,'') : '';
 
