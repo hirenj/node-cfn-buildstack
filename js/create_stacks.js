@@ -157,6 +157,8 @@ function createStacks(stackName='Stack',outputpath='',inputpath='resources') {
 
     let status = git_status ? ' '+git_status.replace(/-0-[^-]+$/,'') : '';
 
+    stackName = stackName.replace(/[^A-Za-z0-9_\-]/g,'_');
+
     stack.Description = `${stackName}${status}`;
 
     if (options_stack) {
